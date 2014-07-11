@@ -1,10 +1,15 @@
 package main
 
 import (
-    "fmd"
-    "github.com/codegangsta/martini"
+	"github.com/go-martini/martini"
 )
 
 func main() {
-    fmt.Println("Hello, world!")
+	m := martini.Classic()
+
+	m.Get("/", func() string {
+		return "Hafez Restaurant"
+	})
+
+	m.Run()
 }
