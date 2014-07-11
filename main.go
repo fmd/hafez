@@ -9,8 +9,8 @@ func main() {
 	m := martini.Classic()
 	m.Use(render.Renderer())
 
-	m.Get("/", func(r render.Render) string {
-		r.HTML(200, "home")
+	m.Get("/", func(r render.Render) {
+		r.HTML(200, "home", "")
 	})
 
 	m.Run()
