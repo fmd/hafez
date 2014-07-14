@@ -1,0 +1,18 @@
+extends layouts/base
+
+block appends title
+    - Home
+
+block content
+    div#content
+        h1 Hafez Restaurant
+        p
+            The best website in the world.
+        p
+            Like i can just pretend it's a blog or whatever.
+        ul
+            li I love this
+            li This is cool
+            li Go is fast.
+            li Go is love.
+

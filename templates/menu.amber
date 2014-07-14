@@ -1,0 +1,12 @@
+extends layouts/base
+
+block appends title
+    - Menu
+
+block content
+    div#content
+        h1 Hafez Restaurant
+        p
+            This the menu
+            li Go is love.
+
