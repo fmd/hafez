@@ -7,7 +7,7 @@ block content
     div#content
         h1 Hafez Restaurant
         p
-            The best website in the world.
+            The best website in the world, broski man.
         p
             Like i can just pretend it's a blog or whatever.
         ul
@@ -16,3 +16,11 @@ block content
             li Go is fast.
             li Go is love.
 
+    div.alright-mate
+        p this is pretty cool
+
+    div.youre-welcome
+        p I don't mind to be honest.
+
+    div.i-dont-know
+        p This is one of my favourites
