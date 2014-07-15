@@ -15,7 +15,6 @@ import (
 type AmberGin struct {
 	TemplateDir string
 	Templates map[string]*template.Template
-	
 	modTime time.Time
 }
 
