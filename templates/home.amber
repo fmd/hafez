@@ -5,7 +5,7 @@ block appends title
 
 block content
     div#content
-        h1 Hafez Restaurant            
+        h1 Hafez Restaurant is great
 
         p This... Why? This is pretty cool. want to see if we can continue on the next line.
 
@@ -13,7 +13,13 @@ block content
         
         ul
             li I love this
-            li This is cool!!!!
+            li This is cool!!!!!!!!
+            li Go is fast.
+            li Go is love.
+
+        ul
+            li I love this
+            li This is cool!!!!!!!!
             li Go is fast.
             li Go is love.
 
