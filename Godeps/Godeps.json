@@ -1,0 +1,24 @@
+{
+	"ImportPath": "github.com/fmd/hafez",
+	"GoVersion": "devel +f8b50ad4cac4 Mon Apr 21 17:00:27 2014 -0700 +",
+	"Deps": [
+		{
+			"ImportPath": "github.com/eknkc/amber",
+			"Rev": "b187d12d7712af498216fa03316d8c55d34a16a1"
+		},
+		{
+			"ImportPath": "github.com/fmd/gin",
+			"Comment": "v0.2b-7-g501f4e9",
+			"Rev": "501f4e995439c8a9bf75df8abe0d28004e0cd035"
+		},
+		{
+			"ImportPath": "github.com/gin-gonic/gin/binding",
+			"Comment": "v0.2b-6-gc224bf8",
+			"Rev": "c224bf82111883dbe354edf9376642f615b7248e"
+		},
+		{
+			"ImportPath": "github.com/julienschmidt/httprouter",
+			"Rev": "7deadb6844d2c6ff1dfb812eaa439b87cdaedf20"
+		}
+	]
+}
