@@ -1,10 +1,19 @@
 !!! 5
 html
     head
+        link
+            [href=StaticUrl + "/css/style.css"]
+            [rel="stylesheet"]
+
         title
             block title
                 | Hafez Restaurant
     body
-        block content
+        div#menu
+            ul
+                li
+                    a[href="/"] Home
+                li
+                    a[href="/menu"] Menuss
 
-    script[type="text/javascript"][src="public/js/live.js"]
+        block content

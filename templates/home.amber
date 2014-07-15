@@ -5,14 +5,15 @@ block appends title
 
 block content
     div#content
-        h1 Hafez Restaurant
-        p
-            The best website in the world, broski man.
-        p
-            Like i can just pretend it's a blog or whatever.
+        h1 Hafez Restaurant            
+
+        p This... Why? This is pretty cool. want to see if we can continue on the next line.
+
+        p Like i can just pretend it's a blog or whatever.
+        
         ul
             li I love this
-            li This is cool
+            li This is cool!!!!
             li Go is fast.
             li Go is love.
 
@@ -24,3 +25,14 @@ block content
 
     div.i-dont-know
         p This is one of my favourites
+
+    p I'd like to be the kind of dude... I don't know. I want to do this better. I'm just not sure.
+
+    div.cool
+        ul
+            li I think I'll use bootstrap.
+            li that'd be good.
+            li I like the idea.
+    
+    div
+        p I guess if you change it too fast it doesn't really work?
