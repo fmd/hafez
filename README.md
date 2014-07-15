@@ -10,7 +10,7 @@ You can swap out fmdud.com for your own domain if this is being hosted elsewhere
 
 ##Development
 * To compile the program, make sure your `$GOPATH` is set and run `go install github.com/fmd/hafez`.
-`./hafez` will run the server.
+`hafez` will run the server. Make sure you are in the root directory of this repo when the command is run.
 
 ##Deployment
 * Ensure that the git remote is set up properly: `git remote add live dokku@fmdud.com:hafez`.
