@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/fmd/hafez",
-	"GoVersion": "go1.3.0",
+	"GoVersion": "f8b50ad4cac4",
 	"Deps": [
 		{
 			"ImportPath": "github.com/eknkc/amber",
