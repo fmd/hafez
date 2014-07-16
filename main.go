@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/fmd/gin"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"path"
 	"fmt"
@@ -50,7 +50,7 @@ func main() {
 			staticUrl,
 		}
 
-		c.ExecHTML(200, amber.Templates["home"], data)
+		c.Render(200, amber, "home", data)
 	})
 
 	r.GET("/menu", func(c *gin.Context) {
@@ -61,7 +61,7 @@ func main() {
 			staticUrl,
 		}
 
-		c.ExecHTML(200, amber.Templates["menu"], data)
+		c.Render(200, amber, "menu", data)
 	})
 
 	r.Static(staticUrl, publicDir)

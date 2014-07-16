@@ -1,12 +1,15 @@
 package main
 
 import (
+    //"github.com/gin-gonic/gin/render"
+    "github.com/gin-gonic/gin"
     "github.com/eknkc/amber"
-    "github.com/fmd/gin"
     "html/template"
     "path/filepath"
     "net/http"
+    "errors"
     "time"
+    "fmt"
     "os"
 )
 
@@ -14,6 +17,20 @@ type AmberGin struct {
     TemplateDir string
     Templates map[string]*template.Template
     modTime time.Time
+}
+
+func (a *AmberGin) Render(w http.ResponseWriter, code int, data ...interface{}) error {
+    tmpl := a.Templates[data[0].(string)]
+    if tmpl == nil {
+        return errors.New(fmt.Sprintf("Template \"%s\" does not exist!", data[0].(string)))
+    }
+
+    if code >= 0 {
+        w.Header().Set("Content-Type", "text/html")
+        w.WriteHeader(code)
+    }
+
+    return tmpl.Execute(w, data[1])
 }
 
 func NewAmberGin(templateDir string) (*AmberGin, error) {

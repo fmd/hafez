@@ -1,7 +1,7 @@
 package main
 
 import (
-    "github.com/fmd/gin"
+    "github.com/gin-gonic/gin"
     "net/url"
     "path"
     "log"
@@ -37,7 +37,7 @@ func (g *GzipGin) Middleware() gin.HandlerFunc {
             
             if err == nil && info != nil {
                 c.Writer.Header().Set("Content-Encoding", "gzip")
-                c.Req.URL = url
+                c.Request.URL = url
                 log.Println("GZIP!")
             }
 
