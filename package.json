@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/fmd/hafez",
   "dependencies": {
-    "gulp": "~3.8.6"
+    "gulp": "~3.8.6",
+    "gulp-sass": "~0.7.2"
   }
 }
