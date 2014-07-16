@@ -32,7 +32,7 @@ func main() {
 	templateDir := "templates"
 	staticUrl := "/assets"
 
-	gzip := NewGzipGin(path.Join(publicDir,"zipped"), publicDir)
+	gzip := NewGzipGin(path.Join(publicDir,"zipped"), publicDir, staticUrl)
 	amber, err := NewAmberGin(templateDir)
 
 	if err != nil {

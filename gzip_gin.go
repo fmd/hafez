@@ -10,35 +10,39 @@ import (
 )
 
 type GzipGin struct {
-    ZippedFolder string
-    UnzippedFolder string
+    ZippedDir string
+    UnzippedDir string
+    StaticUrl string
 }
 
-func NewGzipGin(zippedFolder string, unzippedFolder string) *GzipGin {
-    return &GzipGin{zippedFolder, unzippedFolder}
+func NewGzipGin(zippedDir string, unzippedDir string, staticUrl string) *GzipGin {
+    return &GzipGin{zippedDir, unzippedDir, staticUrl}
 }
 
 func (g *GzipGin) Middleware() gin.HandlerFunc {
     return func (c *gin.Context) {
-            fp := c.Params.ByName("filepath")
+            file := c.Params.ByName("filepath")
 
-            if len(fp) == 0 {
+            if len(file) == 0 {
                 return
             }
 
-            np := fmt.Sprintf("%s.gz",path.Join(g.ZippedFolder, fp))
-            url, err := url.Parse(np)
+            filegz := fmt.Sprintf("%s.gz", file)
+            fp := path.Join(g.ZippedDir, filegz)
+            up := fmt.Sprintf("%s%s", g.StaticUrl, filegz)
+
+            url, err := url.Parse(up)
+            
             if err != nil {
                 log.Println(err.Error())
                 return
             }
 
-            info, err := os.Stat(np)
+            info, err := os.Stat(fp)
             
             if err == nil && info != nil {
                 c.Writer.Header().Set("Content-Encoding", "gzip")
                 c.Request.URL = url
-                log.Println("GZIP!")
             }
 
             return
