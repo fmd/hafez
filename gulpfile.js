@@ -11,5 +11,5 @@ gulp.task('sass', function () {
 gulp.task('compress', function () {
     gulp.src('./public/css/*.css')
         .pipe(gzip())
-        .pipe(gulp.dest('./public/zipped/css'));
+        .pipe(gulp.dest('./public/css'));
 });

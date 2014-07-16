@@ -3,17 +3,44 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"mime"
+	"path/filepath"
 	"path"
 	"fmt"
 	"os"
 )
 
-func StaticHead(staticUrl string, publicDir string) (string, func(*gin.Context)) {
-	p := path.Join(staticUrl, "/*filepath")
-	return p, func (c *gin.Context) {
+func GzipStatic(r *gin.Engine, p string, root string) {
+	p = path.Join(p, "/*filepath")
+	fileServer := http.FileServer(http.Dir(root))
+
+	r.GET(p, func(c *gin.Context) {
+		original := c.Request.URL.Path
+		newPath := c.Params.ByName("filepath")
+		gzPath := fmt.Sprintf("%s.gz",newPath)
+
+		_, err := os.Stat(path.Join(root, gzPath))
+
+		if err != nil {
+			c.Request.URL.Path = newPath
+			fileServer.ServeHTTP(c.Writer, c.Request)
+			c.Request.URL.Path = original
+			return
+		}
+
+		c.Request.URL.Path = gzPath
+		ctype := mime.TypeByExtension(filepath.Ext(original))
+		c.Writer.Header().Set("Content-Type", ctype)
+		c.Writer.Header().Set("Content-Encoding", "gzip")
+
+		fileServer.ServeHTTP(c.Writer, c.Request)
+		c.Request.URL.Path = original
+	})
+
+	r.HEAD(p, func (c *gin.Context) {
 		fp := c.Params.ByName("filepath")
 
-		info, err := os.Stat(path.Join(publicDir, fp))
+		info, err := os.Stat(path.Join(root, fp))
 		if err != nil || info == nil {
 			c.Abort(404)
 			return
@@ -22,7 +49,7 @@ func StaticHead(staticUrl string, publicDir string) (string, func(*gin.Context))
 		c.Writer.Header().Set("Last-Modified", info.ModTime().Format(http.TimeFormat))
 		c.Abort(200)
 		return
-	}
+	})
 }
 
 func main() {
@@ -32,7 +59,7 @@ func main() {
 	templateDir := "templates"
 	staticUrl := "/assets"
 
-	gzip := NewGzipGin(path.Join(publicDir,"zipped"), publicDir, staticUrl)
+	//gzip := NewGzipGin(publicDir, "zipped", staticUrl)
 	amber, err := NewAmberGin(templateDir)
 
 	if err != nil {
@@ -40,7 +67,7 @@ func main() {
 	}
 
 	r.Use(amber.DevMiddleware())
-	r.Use(gzip.Middleware())
+	//r.Use(gzip.Middleware())
 
 	r.GET("/", func(c *gin.Context) {
 
@@ -64,8 +91,7 @@ func main() {
 		c.Render(200, amber, "menu", data)
 	})
 
-	r.Static(staticUrl, publicDir)
-	r.HEAD(StaticHead(staticUrl, publicDir))
+	GzipStatic(r, staticUrl, publicDir)
 
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
