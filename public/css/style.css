@@ -1,5 +1,3 @@
-h1 { color:#ff00ff; font-size:72px; }
-p { font-size:12px; }
-ul { margin-top: 20px; }
-
-.alright-mate { background-color:#fefefe; }
+h1 {
+  font-size: 72px;
+  color: #ff0; }
