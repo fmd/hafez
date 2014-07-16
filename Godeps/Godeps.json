@@ -3,13 +3,9 @@
 	"GoVersion": "go1.3",
 	"Deps": [
 		{
-			"ImportPath": "github.com/eknkc/amber",
-			"Rev": "b187d12d7712af498216fa03316d8c55d34a16a1"
-		},
-		{
-			"ImportPath": "github.com/gin-gonic/gin",
-			"Comment": "v0.2b-23-g3cf2d13",
-			"Rev": "3cf2d1338f23a01e6d46f7d28765c442607ef68c"
+			"ImportPath": "github.com/codegangsta/negroni",
+			"Comment": "v0.1-21-gb1eae39",
+			"Rev": "b1eae394401aa297aa73429df6f503c06657a0aa"
 		},
 		{
 			"ImportPath": "github.com/julienschmidt/httprouter",
