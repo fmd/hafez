@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-func GzipStatic(r *gin.Engine, p string, root string) {
+func StaticWithGzipAndHead(r *gin.Engine, p string, root string) {
 	p = path.Join(p, "/*filepath")
 	fileServer := http.FileServer(http.Dir(root))
 
@@ -38,14 +38,15 @@ func GzipStatic(r *gin.Engine, p string, root string) {
 	})
 
 	r.HEAD(p, func (c *gin.Context) {
-		fp := c.Params.ByName("filepath")
+		fp := path.Join(root, c.Params.ByName("filepath"))
 
-		info, err := os.Stat(path.Join(root, fp))
+		info, err := os.Stat(fp)
 		if err != nil || info == nil {
 			c.Abort(404)
 			return
 		}
 
+		c.Writer.Header().Set("Content-Type",  mime.TypeByExtension(filepath.Ext(fp)))
 		c.Writer.Header().Set("Last-Modified", info.ModTime().Format(http.TimeFormat))
 		c.Abort(200)
 		return
@@ -91,7 +92,7 @@ func main() {
 		c.Render(200, amber, "menu", data)
 	})
 
-	GzipStatic(r, staticUrl, publicDir)
+	StaticWithGzipAndHead(r, staticUrl, publicDir)
 
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
