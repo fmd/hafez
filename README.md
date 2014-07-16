@@ -1,6 +1,6 @@
 #Hafez restaurant website repository
 
-This is the GitHub repository for the Hafez Restaurant website. The site is served with Martini. It uses standard Go HTML templates.
+This is the GitHub repository for the Hafez Restaurant website. The site is served with [Gin](https://github.com/gin-gonic/gin). It uses [Amber](https://github.com/eknkc/amber) templates.
 
 ##Config
 To configure the dokku domains on live, use the following command (Note that this requires the dokku domains extension):
