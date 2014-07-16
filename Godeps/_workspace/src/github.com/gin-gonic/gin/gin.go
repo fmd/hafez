@@ -2,11 +2,11 @@ package gin
 
 import (
 	"bytes"
-	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin/binding"
+	"github.com/gin-gonic/gin/render"
 	"github.com/julienschmidt/httprouter"
 	"html/template"
 	"log"
@@ -17,12 +17,13 @@ import (
 )
 
 const (
-	AbortIndex = math.MaxInt8 / 2
-	MIMEJSON   = "application/json"
-	MIMEHTML   = "text/html"
-	MIMEXML    = "application/xml"
-	MIMEXML2   = "text/xml"
-	MIMEPlain  = "text/plain"
+	AbortIndex   = math.MaxInt8 / 2
+	MIMEJSON     = "application/json"
+	MIMEHTML     = "text/html"
+	MIMEXML      = "application/xml"
+	MIMEXML2     = "text/xml"
+	MIMEPlain    = "text/plain"
+	MIMEPOSTForm = "application/x-www-form-urlencoded"
 )
 
 const (
@@ -48,7 +49,7 @@ type (
 	// Context is the most important part of gin. It allows us to pass variables between middleware,
 	// manage the flow, validate the JSON of a request and render a JSON response for example.
 	Context struct {
-		Req      *http.Request
+		Request  *http.Request
 		Writer   ResponseWriter
 		Keys     map[string]interface{}
 		Errors   errorMsgs
@@ -70,29 +71,32 @@ type (
 	// Represents the web framework, it wraps the blazing fast httprouter multiplexer and a list of global middlewares.
 	Engine struct {
 		*RouterGroup
-		HTMLTemplates *template.Template
-		cache         sync.Pool
-		handlers404   []HandlerFunc
-		router        *httprouter.Router
+		HTMLRender  render.Render
+		cache       sync.Pool
+		handlers404 []HandlerFunc
+		router      *httprouter.Router
 	}
 )
 
 // Allows type H to be used with xml.Marshal
 func (h H) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
-	start.Name = xml.Name{"", "map"}
+	start.Name = xml.Name{
+		Space: "",
+		Local: "map",
+	}
 	if err := e.EncodeToken(start); err != nil {
 		return err
 	}
 	for key, value := range h {
 		elem := xml.StartElement{
-			xml.Name{"", key},
-			[]xml.Attr{},
+			Name: xml.Name{Space: "", Local: key},
+			Attr: []xml.Attr{},
 		}
 		if err := e.EncodeElement(value, elem); err != nil {
 			return err
 		}
 	}
-	if err := e.EncodeToken(xml.EndElement{start.Name}); err != nil {
+	if err := e.EncodeToken(xml.EndElement{Name: start.Name}); err != nil {
 		return err
 	}
 	return nil
@@ -112,6 +116,9 @@ func (a errorMsgs) ByType(typ uint32) errorMsgs {
 }
 
 func (a errorMsgs) String() string {
+	if len(a) == 0 {
+		return ""
+	}
 	var buffer bytes.Buffer
 	for i, msg := range a {
 		text := fmt.Sprintf("Error #%02d: %s \n     Meta: %v\n", (i + 1), msg.Err, msg.Meta)
@@ -140,8 +147,20 @@ func Default() *Engine {
 	return engine
 }
 
-func (engine *Engine) LoadHTMLTemplates(pattern string) {
-	engine.HTMLTemplates = template.Must(template.ParseGlob(pattern))
+func (engine *Engine) LoadHTMLGlob(pattern string) {
+	templ := template.Must(template.ParseGlob(pattern))
+	engine.SetHTTPTemplate(templ)
+}
+
+func (engine *Engine) LoadHTMLFiles(files ...string) {
+	templ := template.Must(template.ParseFiles(files...))
+	engine.SetHTTPTemplate(templ)
+}
+
+func (engine *Engine) SetHTTPTemplate(templ *template.Template) {
+	engine.HTMLRender = render.HTMLRender{
+		Template: templ,
+	}
 }
 
 // Adds handlers for NotFound. It return a 404 code by default.
@@ -171,6 +190,12 @@ func (engine *Engine) Run(addr string) {
 	}
 }
 
+func (engine *Engine) RunTLS(addr string, cert string, key string) {
+	if err := http.ListenAndServeTLS(addr, cert, key, engine); err != nil {
+		panic(err)
+	}
+}
+
 /************************************/
 /********** ROUTES GROUPING *********/
 /************************************/
@@ -178,7 +203,7 @@ func (engine *Engine) Run(addr string) {
 func (engine *Engine) createContext(w http.ResponseWriter, req *http.Request, params httprouter.Params, handlers []HandlerFunc) *Context {
 	c := engine.cache.Get().(*Context)
 	c.Writer.reset(w)
-	c.Req = req
+	c.Request = req
 	c.Params = params
 	c.handlers = handlers
 	c.Keys = nil
@@ -191,10 +216,20 @@ func (group *RouterGroup) Use(middlewares ...HandlerFunc) {
 	group.Handlers = append(group.Handlers, middlewares...)
 }
 
+func joinGroupPath(elems ...string) string {
+	joined := path.Join(elems...)
+	lastComponent := elems[len(elems)-1]
+	// Append a '/' if the last component had one, but only if it's not there already
+	if len(lastComponent) > 0 && lastComponent[len(lastComponent)-1] == '/' && joined[len(joined)-1] != '/' {
+		return joined + "/"
+	}
+	return joined
+}
+
 // Creates a new router group. You should add all the routes that have common middlwares or the same path prefix.
 // For example, all the routes that use a common middlware for authorization could be grouped.
 func (group *RouterGroup) Group(component string, handlers ...HandlerFunc) *RouterGroup {
-	prefix := path.Join(group.prefix, component)
+	prefix := joinGroupPath(group.prefix, component)
 	return &RouterGroup{
 		Handlers: group.combineHandlers(handlers),
 		parent:   group,
@@ -214,7 +249,7 @@ func (group *RouterGroup) Group(component string, handlers ...HandlerFunc) *Rout
 // frequently used, non-standardized or custom methods (e.g. for internal
 // communication with a proxy).
 func (group *RouterGroup) Handle(method, p string, handlers []HandlerFunc) {
-	p = path.Join(group.prefix, p)
+	p = joinGroupPath(group.prefix, p)
 	handlers = group.combineHandlers(handlers)
 	group.engine.router.Handle(method, p, func(w http.ResponseWriter, req *http.Request, params httprouter.Params) {
 		c := group.engine.createContext(w, req, params, handlers)
@@ -269,10 +304,10 @@ func (group *RouterGroup) Static(p, root string) {
 	fileServer := http.FileServer(http.Dir(root))
 
 	group.GET(p, func(c *Context) {
-		original := c.Req.URL.Path
-		c.Req.URL.Path = c.Params.ByName("filepath")
-		fileServer.ServeHTTP(c.Writer, c.Req)
-		c.Req.URL.Path = original
+		original := c.Request.URL.Path
+		c.Request.URL.Path = c.Params.ByName("filepath")
+		fileServer.ServeHTTP(c.Writer, c.Request)
+		c.Request.URL.Path = original
 	})
 }
 
@@ -405,9 +440,9 @@ func filterFlags(content string) string {
 // if Parses the request's body as JSON if Content-Type == "application/json"  using JSON or XML  as a JSON input. It decodes the json payload into the struct specified as a pointer.Like ParseBody() but this method also writes a 400 error if the json is not valid.
 func (c *Context) Bind(obj interface{}) bool {
 	var b binding.Binding
-	ctype := filterFlags(c.Req.Header.Get("Content-Type"))
+	ctype := filterFlags(c.Request.Header.Get("Content-Type"))
 	switch {
-	case c.Req.Method == "GET":
+	case c.Request.Method == "GET" || ctype == MIMEPOSTForm:
 		b = binding.Form
 	case ctype == MIMEJSON:
 		b = binding.JSON
@@ -421,80 +456,42 @@ func (c *Context) Bind(obj interface{}) bool {
 }
 
 func (c *Context) BindWith(obj interface{}, b binding.Binding) bool {
-	if err := b.Bind(c.Req, obj); err != nil {
+	if err := b.Bind(c.Request, obj); err != nil {
 		c.Fail(400, err)
 		return false
 	}
 	return true
 }
 
-// Serializes the given struct as JSON into the response body in a fast and efficient way.
-// It also sets the Content-Type as "application/json".
-func (c *Context) JSON(code int, obj interface{}) {
-	c.Writer.Header().Set("Content-Type", MIMEJSON)
-	if code >= 0 {
-		c.Writer.WriteHeader(code)
-	}
-	encoder := json.NewEncoder(c.Writer)
-	if err := encoder.Encode(obj); err != nil {
+func (c *Context) Render(code int, render render.Render, obj ...interface{}) {
+	if err := render.Render(c.Writer, code, obj...); err != nil {
 		c.ErrorTyped(err, ErrorTypeInternal, obj)
 		c.Abort(500)
 	}
+}
+
+// Serializes the given struct as JSON into the response body in a fast and efficient way.
+// It also sets the Content-Type as "application/json".
+func (c *Context) JSON(code int, obj interface{}) {
+	c.Render(code, render.JSON, obj)
 }
 
 // Serializes the given struct as XML into the response body in a fast and efficient way.
 // It also sets the Content-Type as "application/xml".
 func (c *Context) XML(code int, obj interface{}) {
-	c.Writer.Header().Set("Content-Type", MIMEXML)
-	if code >= 0 {
-		c.Writer.WriteHeader(code)
-	}
-	encoder := xml.NewEncoder(c.Writer)
-	if err := encoder.Encode(obj); err != nil {
-		c.ErrorTyped(err, ErrorTypeInternal, obj)
-		c.Abort(500)
-	}
+	c.Render(code, render.XML, obj)
 }
 
-// Renders the HTML template.
-// It also updates the HTTP code and sets the Content-Type as "text/html".
-func (c *Context) ExecHTML(code int, tmpl *template.Template, data interface{}) {
-	c.Writer.Header().Set("Content-Type", MIMEHTML)
-	if code >= 0 {
-		c.Writer.WriteHeader(code)
-	}
-	if err := tmpl.Execute(c.Writer, data); err != nil {
-		c.ErrorTyped(err, ErrorTypeInternal, H{
-			"data": data,
-		})
-		c.Abort(500)
-	}
-}
-
-// Renders the HTML template specified by its file name.
+// Renders the HTTP template specified by its file name.
 // It also updates the HTTP code and sets the Content-Type as "text/html".
 // See http://golang.org/doc/articles/wiki/
-func (c *Context) HTML(code int, name string, data interface{}) {
-	c.Writer.Header().Set("Content-Type", MIMEHTML)
-	if code >= 0 {
-		c.Writer.WriteHeader(code)
-	}
-	if err := c.Engine.HTMLTemplates.ExecuteTemplate(c.Writer, name, data); err != nil {
-		c.ErrorTyped(err, ErrorTypeInternal, H{
-			"name": name,
-			"data": data,
-		})
-		c.Abort(500)
-	}
+func (c *Context) HTML(code int, name string, obj interface{}) {
+	c.Render(code, c.Engine.HTMLRender, name, obj)
 }
 
 // Writes the given string into the response body and sets the Content-Type to "text/plain".
 func (c *Context) String(code int, format string, values ...interface{}) {
-	c.Writer.Header().Set("Content-Type", MIMEPlain)
-	if code >= 0 {
-		c.Writer.WriteHeader(code)
-	}
-	c.Writer.Write([]byte(fmt.Sprintf(format, values...)))
+	c.Render(code, render.Plain, format, values)
 }
 
 // Writes some data into the body stream and updates the HTTP code.
