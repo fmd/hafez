@@ -1,0 +1,22 @@
+{
+  "name": "hafez",
+  "version": "0.0.0",
+  "description": "Hafez tasks",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/fmd/hafez"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fmd/hafez/issues"
+  },
+  "homepage": "https://github.com/fmd/hafez",
+  "dependencies": {
+    "gulp": "~3.8.6"
+  }
+}
