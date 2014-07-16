@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"net/http"
-	"mime"
-	"path/filepath"
-	"path"
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"mime"
+	"net/http"
 	"os"
+	"path"
+	"path/filepath"
 )
 
 func StaticWithGzipAndHead(r *gin.Engine, p string, root string) {
@@ -23,7 +23,7 @@ func StaticWithGzipAndHead(r *gin.Engine, p string, root string) {
 		newPath := c.Params.ByName("filepath")
 
 		//This path will be called by os.Stat to see if there's a gzipped version of the file.
-		gzPath := fmt.Sprintf("%s.gz",newPath)
+		gzPath := fmt.Sprintf("%s.gz", newPath)
 
 		//See if the gzipped version exists.
 		_, err := os.Stat(path.Join(root, gzPath))
@@ -49,14 +49,14 @@ func StaticWithGzipAndHead(r *gin.Engine, p string, root string) {
 
 	//I use live.js, which makes HEAD requests to the static files (as do a lot of tools and other things).
 	//This method responds to HEAD requests with a correct content type and last-modified date.
-	r.HEAD(p, func (c *gin.Context) {
+	r.HEAD(p, func(c *gin.Context) {
 		fp := path.Join(root, c.Params.ByName("filepath"))
 
 		info, err := os.Stat(fp)
 		if err != nil || info == nil {
 			c.Abort(404)
 		} else {
-			c.Writer.Header().Set("Content-Type",  mime.TypeByExtension(filepath.Ext(fp)))
+			c.Writer.Header().Set("Content-Type", mime.TypeByExtension(filepath.Ext(fp)))
 			c.Writer.Header().Set("Last-Modified", info.ModTime().Format(http.TimeFormat))
 			c.Abort(200)
 		}
@@ -84,7 +84,7 @@ func main() {
 
 		data := struct {
 			StaticUrl string
-		} {
+		}{
 			staticUrl,
 		}
 
@@ -95,14 +95,14 @@ func main() {
 
 		data := struct {
 			StaticUrl string
-		} {
+		}{
 			staticUrl,
 		}
 
 		c.Render(200, amber, "menu", data)
 	})
 
-	StaticWithGzipAndHead(r, staticUrl, publicDir)
+	r.Static(staticUrl, publicDir)
 
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
