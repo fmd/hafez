@@ -32,12 +32,15 @@ func main() {
 	templateDir := "templates"
 	staticUrl := "/assets"
 
-	m, err := NewAmberGin(templateDir)
+	gzip := NewGzipGin(path.Join(publicDir,"zipped"), publicDir)
+	amber, err := NewAmberGin(templateDir)
+
 	if err != nil {
 		panic(err)
 	}
 
-	r.Use(m.DevMiddleware())
+	r.Use(amber.DevMiddleware())
+	r.Use(gzip.Middleware())
 
 	r.GET("/", func(c *gin.Context) {
 
@@ -47,7 +50,7 @@ func main() {
 			staticUrl,
 		}
 
-		c.ExecHTML(200, m.Templates["home"], data)
+		c.ExecHTML(200, amber.Templates["home"], data)
 	})
 
 	r.GET("/menu", func(c *gin.Context) {
@@ -58,7 +61,7 @@ func main() {
 			staticUrl,
 		}
 
-		c.ExecHTML(200, m.Templates["menu"], data)
+		c.ExecHTML(200, amber.Templates["menu"], data)
 	})
 
 	r.Static(staticUrl, publicDir)
