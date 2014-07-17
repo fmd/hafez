@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"fmt"
 	"github.com/codegangsta/negroni"
 	"github.com/julienschmidt/httprouter"
@@ -15,5 +16,11 @@ func main() {
 
 	n := negroni.Classic()
 	n.UseHandler(router)
-	n.Run(":9999")
+
+	port := os.Getenv("PORT")
+	if len(port) == 0 {
+		port = "5000"
+	}
+
+	n.Run(":" + port)
 }
