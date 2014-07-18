@@ -10,10 +10,6 @@
 		{
 			"ImportPath": "github.com/julienschmidt/httprouter",
 			"Rev": "7deadb6844d2c6ff1dfb812eaa439b87cdaedf20"
-		},
-		{
-			"ImportPath": "github.com/unrolled/render",
-			"Rev": "7a4e96655a4ae99e3b18c2e74bb5bac876d51596"
 		}
 	]
 }
