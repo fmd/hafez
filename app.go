@@ -5,7 +5,6 @@ import (
     "strconv"
     "net/http"
     "github.com/gorilla/context"
-    "github.com/fmd/hafez/routes"
     "github.com/codegangsta/negroni"
     "github.com/julienschmidt/httprouter"
 )
