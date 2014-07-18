@@ -2,14 +2,15 @@ package main
 
 import (
     "os"
-    "fmt"
     "strconv"
-    //"github.com/unrolled/render"
+    "net/http"
+    "github.com/gorilla/context"
+    "github.com/fmd/hafez/routes"
     "github.com/codegangsta/negroni"
     "github.com/julienschmidt/httprouter"
-    "net/http"
 )
 
+//AppOptions Constants
 const (
     DefaultPublicDir string = "public/"
     DefaultStaticUrl string = "/assets"
@@ -43,6 +44,12 @@ func (opt AppOptions) Process() AppOptions {
     return opt
 }
 
+//Context keys
+const (
+    AppInfo = iota
+    UserInfo
+)
+
 type App struct {
     publicDir string
     staticUrl string
@@ -50,6 +57,10 @@ type App struct {
 
     router  *httprouter.Router
     negroni *negroni.Negroni
+}
+
+func (a *App) Middleware(rw http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+    context.Set(req, AppInfo, "Info!")
 }
 
 func NewApp(opts AppOptions) *App {
@@ -70,6 +81,9 @@ func NewApp(opts AppOptions) *App {
         negroni:   n,
     }
 
+    a.UseHandler(a.Middleware)
+    a.Routes()
+
     return a
 }
 
@@ -78,8 +92,6 @@ func (a *App) Run() {
 }
 
 func (a *App) Routes() {
-    a.router.GET("/", func(w http.ResponseWriter, req *http.Request, params httprouter.Params) {
-        fmt.Println(w, "Hello world!")
-    })
+    a.router.GET("/", routes.Home)
+    a.negroni.UseHandler(a.router)
 }
-
