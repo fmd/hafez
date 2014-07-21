@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"html/template"
 	"github.com/julienschmidt/httprouter"
 	//"github.com/gorilla/context"
 )
@@ -10,7 +11,7 @@ type Frontend struct {
 
 }
 
-func NewFrontend(r *httprouter.Router) *Frontend {
+func NewFrontend(r *httprouter.Router, t map[string]*template.Template) *Frontend {
 	f := &Frontend{}
 
 	r.GET("/", f.Home)
