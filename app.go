@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/codegangsta/negroni"
-	"github.com/gorilla/context"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"os"
@@ -48,7 +47,9 @@ type App struct {
 	staticUrl string
 	port      int
 
-	negroni *negroni.Negroni
+	negroni  *negroni.Negroni
+	router   *httprouter.Router
+	frontend *Frontend
 }
 
 func NewApp(opts AppOptions) *App {
@@ -70,6 +71,9 @@ func NewApp(opts AppOptions) *App {
 	s.Prefix = a.staticUrl
 	a.negroni.Use(s)
 
+	r := httprouter.New()
+	a.negroni.UseHandler(r)
+
 	return a
 }
 
@@ -77,13 +81,6 @@ func (a *App) Run() {
 	a.negroni.Run(":" + strconv.Itoa(a.port))
 }
 
-func (a *App) Routes() {
-	r := httprouter.New()
-
-	r.GET("/", a.frontend.Home)
-	r.GET("/menu", a.frontend.Menu)
-	r.GET("/gallery", a.frontend.Gallery)
-	r.GET("/book", a.frontend.Book)
-
-	a.negroni.UseHandler(r)
+func (a *App) Frontend() {
+	a.frontend = NewFrontend(a.router)
 }
