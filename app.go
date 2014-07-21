@@ -1,96 +1,89 @@
 package main
 
 import (
-    "os"
-    "strconv"
-    "net/http"
-    "github.com/gorilla/context"
-    "github.com/codegangsta/negroni"
-    "github.com/julienschmidt/httprouter"
+	"github.com/codegangsta/negroni"
+	"github.com/gorilla/context"
+	"github.com/julienschmidt/httprouter"
+	"net/http"
+	"os"
+	"strconv"
 )
 
 //AppOptions Constants
 const (
-    DefaultPublicDir string = "public/"
-    DefaultStaticUrl string = "/assets"
-    DefaultPort      int    = 5000
+	DefaultPublicDir string = "public/"
+	DefaultStaticUrl string = "/assets"
+	DefaultPort      int    = 5000
 )
 
 type AppOptions struct {
-    PublicDir string
-    StaticUrl string
-    Port      int
+	PublicDir string
+	StaticUrl string
+	Port      int
 }
 
 func (opt AppOptions) Process() AppOptions {
-    if len(opt.PublicDir) == 0 {
-        opt.PublicDir = DefaultPublicDir
-    }
+	if len(opt.PublicDir) == 0 {
+		opt.PublicDir = DefaultPublicDir
+	}
 
-    if len(opt.StaticUrl) == 0 {
-        opt.StaticUrl = DefaultStaticUrl
-    }
+	if len(opt.StaticUrl) == 0 {
+		opt.StaticUrl = DefaultStaticUrl
+	}
 
-    if opt.Port == 0 {
-        var err error
+	if opt.Port == 0 {
+		var err error
 
-        opt.Port, err = strconv.Atoi(os.Getenv("PORT"))
-        if err != nil {
-            opt.Port = DefaultPort
-        }
-    }
+		opt.Port, err = strconv.Atoi(os.Getenv("PORT"))
+		if err != nil {
+			opt.Port = DefaultPort
+		}
+	}
 
-    return opt
+	return opt
 }
-
-//Context keys
-const (
-    AppInfo = iota
-    UserInfo
-)
 
 type App struct {
-    publicDir string
-    staticUrl string
-    port      int
+	publicDir string
+	staticUrl string
+	port      int
 
-    router  *httprouter.Router
-    negroni *negroni.Negroni
-}
-
-func (a *App) Middleware(rw http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-    context.Set(req, AppInfo, "Info!")
+	negroni *negroni.Negroni
 }
 
 func NewApp(opts AppOptions) *App {
-    opts = opts.Process()
+	opts = opts.Process()
 
-    router := httprouter.New()
+	a := &App{
+		publicDir: opts.PublicDir,
+		staticUrl: opts.StaticUrl,
+		port:      opts.Port,
+	}
 
-    n := negroni.New()
-    n.Use(negroni.NewRecovery())
-    n.Use(negroni.NewLogger())
+	//Set up Negroni
+	a.negroni = negroni.New()
+	a.negroni.Use(negroni.NewRecovery())
+	a.negroni.Use(negroni.NewLogger())
 
-    a := &App{
-        publicDir: opts.PublicDir,
-        staticUrl: opts.StaticUrl,
-        port:      opts.Port,
+	//Set up static fileserver
+	s := negroni.NewStatic(http.Dir(a.publicDir))
+	s.Prefix = a.staticUrl
+	a.negroni.Use(s)
 
-        router:    router,
-        negroni:   n,
-    }
-
-    a.UseHandler(a.Middleware)
-    a.Routes()
-
-    return a
+	return a
 }
 
 func (a *App) Run() {
-    a.negroni.Run(":" + strconv.Itoa(a.port))
+	a.negroni.Run(":" + strconv.Itoa(a.port))
 }
 
 func (a *App) Routes() {
-    a.router.GET("/", routes.Home)
-    a.negroni.UseHandler(a.router)
+	r := httprouter.New()
+
+	r.GET("/", a.frontend.Home)
+	r.GET("/menu", a.frontend.Menu)
+	r.GET("/gallery", a.frontend.Gallery)
+	r.GET("/book", a.frontend.Book)
+
+	a.negroni.UseHandler(r)
 }
