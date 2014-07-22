@@ -6,6 +6,7 @@ import (
 	"github.com/docopt/docopt-go"
 )
 
+var version = "v0.1"
 var defaultPort string = "8000"
 
 func main() {
@@ -26,6 +27,9 @@ Options:
 	--public-dir=<p>    Directory to serve assets from [default: public/].
 	--static-url=<s>    URL to serve static assets from [default: /assets].`
 
+	//Make sure that the first arg passed to Docopt is the one after `hafez`,
+	//in case the program is being run through, say, github.com/codegangsta/gin,
+	//where the command would look like `gin hafez --bind`.
 	firstArg := 0
 	for idx, arg := range os.Args {
 		if arg == "hafez" {
@@ -33,7 +37,8 @@ Options:
 		}
 	}
 
-	args, err := docopt.Parse(usage, os.Args[firstArg:], true, "Hafez Restaurant v0.1", false)
+
+	args, err := docopt.Parse(usage, os.Args[firstArg:], true, "Hafez Restaurant " + version + ".", false)
 	if err != nil {
 		panic(err)
 	}
