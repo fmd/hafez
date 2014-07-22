@@ -20,9 +20,6 @@ func NewFrontend(r *httprouter.Router, t *Templates, showError bool) *Frontend {
 	}
 
 	r.GET("/",          f.Page("home",    http.StatusOK))
-	r.GET("/menu",      f.Page("menu",    http.StatusOK))
-	r.GET("/contact",   f.Page("contact", http.StatusOK))
-	r.GET("/book",      f.Page("book",    http.StatusOK))
 
 	//Set up router 404 and 500 pages
 	r.NotFound     = f.NotFound()

@@ -26,7 +26,14 @@ Options:
 	--public-dir=<p>    Directory to serve assets from [default: public/].
 	--static-url=<s>    URL to serve static assets from [default: /assets].`
 
-	args, err := docopt.Parse(usage, nil, true, "Hafez Restaurant v0.1", false)
+	firstArg := 0
+	for idx, arg := range os.Args {
+		if arg == "hafez" {
+			firstArg = idx+1
+		}
+	}
+
+	args, err := docopt.Parse(usage, os.Args[firstArg:], true, "Hafez Restaurant v0.1", false)
 	if err != nil {
 		panic(err)
 	}
