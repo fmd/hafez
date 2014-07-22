@@ -8,36 +8,12 @@ import (
 	//"log"
 )
 
-//AppOptions Constants
-const (
-	DefaultTemplateDir string = "templates/"
-	DefaultPublicDir   string = "public/"
-	DefaultStaticUrl   string = "/assets"
-	DefaultPort        int    = 5000
-)
-
 type AppOptions struct {
 	Development bool
 	TemplateDir string
 	PublicDir   string
 	StaticUrl   string
 	Port        int
-}
-
-func (opt AppOptions) Process() AppOptions {
-	if len(opt.PublicDir) == 0 {
-		opt.PublicDir = DefaultPublicDir
-	}
-
-	if len(opt.StaticUrl) == 0 {
-		opt.StaticUrl = DefaultStaticUrl
-	}
-
-	if len(opt.TemplateDir) == 0 {
-		opt.TemplateDir = DefaultTemplateDir
-	}
-
-	return opt
 }
 
 type App struct {
@@ -56,7 +32,6 @@ type App struct {
 
 func NewApp(opts AppOptions) *App {
 	var err error
-	opts = opts.Process()
 
 	//Create the app instance
 	a := &App{
