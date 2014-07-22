@@ -12,16 +12,19 @@ func main() {
 	usage := `Hafez Restaurant Websever.
 
 Usage:
-	hafez [--development][--port=<port> | --bind]
+	hafez [--development][--port=<port> | --bind][--template-dir=<t>][--public-dir=<p>][--static-url=<s>]
 	hafez -h | --help
 	hafez -v | --version
 
 Options:
-	-h --help       Show this screen.
-	-v --version    Show version.
-	--port=<port>   Port to bind on [default: `+ defaultPort +`].
-	--bind          Bind to $PORT.
-	--development   Start server in development mode.`
+	-h --help           Show this screen.
+	-v --version        Show version.
+	--port=<port>       Port to bind on [default: `+ defaultPort +`].
+	--bind              Bind to $PORT.
+	--development       Start server in development mode.
+	--template-dir=<t>  Directory to serve templates from [default: templates/].
+	--public-dir=<p>    Directory to serve assets from [default: public/].
+	--static-url=<s>    URL to serve static assets from [default: /assets].`
 
 	args, err := docopt.Parse(usage, nil, true, "Hafez Restaurant v0.1", false)
 	if err != nil {
@@ -48,12 +51,16 @@ Options:
 		port, _ = strconv.Atoi(defaultPort)
 	}
 
+	templateDir := args["--template-dir"].(string)
+	publicDir := args["--public-dir"].(string)
+	staticUrl := args["--static-url"].(string)
+
 	opts := AppOptions{
 		Development: dev,
 		Port:		 port,
-		TemplateDir: "templates/",
-		PublicDir:	 "public/",
-		StaticUrl:	 "/assets",
+		TemplateDir: templateDir,
+		PublicDir:	 publicDir,
+		StaticUrl:	 staticUrl,
 	}
 
 	NewApp(opts).Run()
