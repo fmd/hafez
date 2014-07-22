@@ -8,10 +8,11 @@ import (
 	//"github.com/gorilla/context"
 )
 
+//TODO: Move render.Render into templates.go for easy rendering across multiple 'apps'?
 type Frontend struct {
 	render    *render.Render
 	templates *Templates
-	showError bool           //Show the error instead of the 500 page? (Set false in production).
+	showError bool
 }
 
 func NewFrontend(r *httprouter.Router, t *Templates, showError bool) *Frontend {
@@ -19,12 +20,14 @@ func NewFrontend(r *httprouter.Router, t *Templates, showError bool) *Frontend {
 		showError: showError,
 	}
 
+	//Set up the route(s).
 	r.GET("/",          f.Page("home",    http.StatusOK))
 
 	//Set up router 404 and 500 pages
 	r.NotFound     = f.NotFound()
 	r.PanicHandler = f.ErrorPage()
 
+	//Create our render.Render.
 	n := render.New(render.Options{})
 	f.render = n
 	f.templates = t
