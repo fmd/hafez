@@ -1,13 +1,12 @@
 package main
 
 import (
-	"github.com/eknkc/amber"
 	"github.com/codegangsta/negroni"
 	"github.com/julienschmidt/httprouter"
-	"html/template"
 	"net/http"
 	"os"
 	"strconv"
+	//"log"
 )
 
 //AppOptions Constants
@@ -19,6 +18,7 @@ const (
 )
 
 type AppOptions struct {
+	Development bool
 	TemplateDir string
 	PublicDir   string
 	StaticUrl   string
@@ -51,32 +51,26 @@ func (opt AppOptions) Process() AppOptions {
 }
 
 type App struct {
+	development bool //Is the app in development mode?
 
-	//TODO: Change string for templateDir and publicDir to http.FileSystem? 
-	templateDir string
+	//TODO: Change string for templateDir and publicDir to http.FileSystem?
 	publicDir   string
 	staticUrl   string
 	port        int
 
 	negroni   *negroni.Negroni
 	router    *httprouter.Router
+	templates *Templates
 	frontend  *Frontend
-	templates map[string]*template.Template
-}
-
-func (a *App) Templates() (map[string]*template.Template, error) {
-	return amber.CompileDir(a.templateDir, amber.DefaultDirOptions, amber.DefaultOptions)
-}
-
-func (a *App) Frontend() *Frontend {
-	return NewFrontend(a.router, a.templates)
 }
 
 func NewApp(opts AppOptions) *App {
+	var err error
 	opts = opts.Process()
 
+	//Create the app instance
 	a := &App{
-		templateDir: opts.TemplateDir,
+		development: opts.Development,
 		publicDir:   opts.PublicDir,
 		staticUrl:   opts.StaticUrl,
 		port:        opts.Port,
@@ -92,20 +86,18 @@ func NewApp(opts AppOptions) *App {
 	s.Prefix = a.staticUrl
 	a.negroni.Use(s)
 
-	//Set up templates
-	var err error
-	a.templates, err = a.Templates()
+	//Set up router
+	a.router = httprouter.New()
+	a.negroni.UseHandler(a.router)
+
+	//Set up templates. TODO: Base recompile bool on development flag.
+	a.templates, err = NewTemplates(opts.TemplateDir, ".amber", a.development)
 	if err != nil {
 		panic(err)
 	}
 
-	//Set up router
-	r := httprouter.New()
-	a.negroni.UseHandler(r)
-
 	//Set up frontend routing
-	a.frontend = a.Frontend()
-
+	a.frontend = NewFrontend(a.router, a.templates, a.development)
 	return a
 }
 
