@@ -4,7 +4,6 @@ import (
 	"github.com/codegangsta/negroni"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
-	"os"
 	"strconv"
 	//"log"
 )
@@ -36,15 +35,6 @@ func (opt AppOptions) Process() AppOptions {
 
 	if len(opt.TemplateDir) == 0 {
 		opt.TemplateDir = DefaultTemplateDir
-	}
-
-	if opt.Port == 0 {
-		var err error
-
-		opt.Port, err = strconv.Atoi(os.Getenv("PORT"))
-		if err != nil {
-			opt.Port = DefaultPort
-		}
 	}
 
 	return opt
