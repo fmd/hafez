@@ -1,0 +1,5 @@
+extends layouts/base
+
+block content
+	h1 500 bro
+	p Sorry man

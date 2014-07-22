@@ -7,12 +7,12 @@ html
 
         title
             block title
-                | Hafez Restaurant
+                | Hafez Smesh
     body
         div#menu
             ul
                 li
-                    a[href="/"] Home
+                    a[href="/"] Hossme!!!
                 li
                     a[href="/menu"] Menuss
 
