@@ -37,12 +37,13 @@ Options:
 		}
 	}
 
-
+	//Use docopts to parse our command-line arguments.
 	args, err := docopt.Parse(usage, os.Args[firstArg:], true, "Hafez Restaurant " + version + ".", false)
 	if err != nil {
 		panic(err)
 	}
 
+	//Parse whether we're in development mode.
 	dev := false
 	if args["--development"].(bool) {
 		dev = true
@@ -51,6 +52,7 @@ Options:
 	var port int
 	var portString string
 
+	//If `--bind` is set, attempt to bind to $PORT. Otherwise use the `--port` argument.
 	if args["--bind"].(bool) {
 		portString = os.Getenv("PORT")
 		port, err = strconv.Atoi(portString)
@@ -59,14 +61,17 @@ Options:
 		port, err = strconv.Atoi(portString)
 	}
 
-	if err != nil {
+	//If $PORT or `--port` could not be resolved to a positive integer, bind to defaultPort.
+	if err != nil || !(port > 0) {
 		port, _ = strconv.Atoi(defaultPort)
 	}
 
+	//Parse the directories we'll use from the command-line args.
 	templateDir := args["--template-dir"].(string)
 	publicDir := args["--public-dir"].(string)
 	staticUrl := args["--static-url"].(string)
 
+	//Feed everything into a new AppOptions instance.
 	opts := AppOptions{
 		Development: dev,
 		Port:		 port,
@@ -75,5 +80,6 @@ Options:
 		StaticUrl:	 staticUrl,
 	}
 
+	//Run the app.
 	NewApp(opts).Run()
 }
