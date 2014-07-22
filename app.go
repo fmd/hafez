@@ -1,12 +1,31 @@
 package main
 
 import (
+	"github.com/gorilla/context"
 	"github.com/codegangsta/negroni"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
-	//"log"
 )
+
+type key int
+
+const AppContextKey key = 0
+
+type AppContext struct {
+	StaticUrl   string
+	Development bool
+}
+
+func (a *App) ContextMiddleware(rw http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+	c := AppContext{
+		StaticUrl:   a.staticUrl,
+		Development: a.development,
+	}
+
+	context.Set(req, AppContextKey, c)
+	next(rw, req)
+}
 
 type AppOptions struct {
 	Development bool
@@ -17,7 +36,7 @@ type AppOptions struct {
 }
 
 type App struct {
-	development bool //Is the app in development mode?
+	development bool
 
 	//TODO: Change string for templateDir and publicDir to http.FileSystem?
 	publicDir   string
@@ -50,6 +69,9 @@ func NewApp(opts AppOptions) *App {
 	s := negroni.NewStatic(http.Dir(a.publicDir))
 	s.Prefix = a.staticUrl
 	a.negroni.Use(s)
+
+	//Use app context middleware
+	a.negroni.Use(negroni.HandlerFunc(a.ContextMiddleware))
 
 	//Set up router
 	a.router = httprouter.New()

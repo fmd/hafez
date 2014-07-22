@@ -1,11 +1,10 @@
 package main
 
 import (
-	//"log"
 	"net/http"
+	"github.com/gorilla/context"
 	"github.com/julienschmidt/httprouter"
 	"github.com/unrolled/render"
-	//"github.com/gorilla/context"
 )
 
 //TODO: Move render.Render into templates.go for easy rendering across multiple 'apps'?
@@ -77,8 +76,11 @@ func (f *Frontend) Page(name string, code int) func(http.ResponseWriter, *http.R
 			return
 		}
 
+		//Get app context
+		context := context.Get(req, AppContextKey)
+
 		//Template is OK. Render the template.
 		r := NewRenderer(render.ContentHTML, code, t)
-		r.Render(rw, nil)
+		r.Render(rw, context)
 	}
 }
