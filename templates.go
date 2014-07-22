@@ -31,12 +31,17 @@ func NewTemplates(directory string, extension string, recompile bool) (*Template
 
 func (t *Templates) CompileDir() error {
 	var err error
-	t.templates, err = amber.CompileDir(t.directory, amber.DefaultDirOptions, amber.DefaultOptions)
+	dir 	:= t.directory
+	dirOpts := amber.DefaultDirOptions
+	opts    := amber.DefaultOptions
+	t.templates, err = amber.CompileDir(dir, dirOpts, opts)
 	return err
 }
 
 func (t *Templates) CompileFile(name string) (*template.Template, error) {
-	return amber.CompileFile(path.Join(t.directory, name) + t.extension, amber.DefaultOptions)
+	path := path.Join(t.directory, name) + t.extension
+	opts := amber.DefaultOptions
+	return amber.CompileFile(path, opts)
 }
 
 func (t *Templates) GetTemplate(name string) (*template.Template, error) {
