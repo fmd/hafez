@@ -17,6 +17,10 @@
 			"Rev": "b187d12d7712af498216fa03316d8c55d34a16a1"
 		},
 		{
+			"ImportPath": "github.com/gorilla/context",
+			"Rev": "708054d61e5a2918b9f4e9700000ee611dcf03f5"
+		},
+		{
 			"ImportPath": "github.com/julienschmidt/httprouter",
 			"Rev": "7deadb6844d2c6ff1dfb812eaa439b87cdaedf20"
 		},
