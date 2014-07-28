@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/docopt/docopt-go"
 	"os"
 	"strconv"
-	"github.com/docopt/docopt-go"
 )
 
 var version = "v0.1"
@@ -20,7 +20,7 @@ Usage:
 Options:
 	-h --help           Show this screen.
 	-v --version        Show version.
-	--port=<port>       Port to bind on [default: `+ defaultPort +`].
+	--port=<port>       Port to bind on [default: ` + defaultPort + `].
 	--bind              Bind to $PORT.
 	--development       Start server in development mode.
 	--template-dir=<t>  Directory to serve templates from [default: templates/].
@@ -33,12 +33,12 @@ Options:
 	firstArg := 0
 	for idx, arg := range os.Args {
 		if arg == "hafez" {
-			firstArg = idx+1
+			firstArg = idx + 1
 		}
 	}
 
 	//Use docopts to parse our command-line arguments.
-	args, err := docopt.Parse(usage, os.Args[firstArg:], true, "Hafez Restaurant " + version + ".", false)
+	args, err := docopt.Parse(usage, os.Args[firstArg:], true, "Hafez Restaurant "+version+".", false)
 	if err != nil {
 		panic(err)
 	}
@@ -74,10 +74,10 @@ Options:
 	//Feed everything into a new AppOptions instance.
 	opts := AppOptions{
 		Development: dev,
-		Port:		 port,
+		Port:        port,
 		TemplateDir: templateDir,
-		PublicDir:	 publicDir,
-		StaticUrl:	 staticUrl,
+		PublicDir:   publicDir,
+		StaticUrl:   staticUrl,
 	}
 
 	//Run the app.
