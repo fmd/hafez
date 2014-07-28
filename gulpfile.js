@@ -4,11 +4,16 @@ var less = require('gulp-less')
 var gzip = require('gulp-gzip')
 
 var paths = {
-  scripts: 'static/js/**/*.js',
-  less:    'static/less/**/*.less',
+  scripts: ['static/flat-ui/js/**/*.js', 'static/js/**/*.js'],
+  less:    ['static/flat-ui/less/flat-ui.less', 'static/less/**/*.less'],
   sass:    'static/scss/**/*.scss',
-  images:  'static/images/**/*'
+  images:  ['static/flat-ui/images/**/*', 'static/images/**/*']
 };
+
+gulp.task('css', function () {
+    gulp.src(paths.css)
+        .pipe(gulp.dest('./public/css'));
+});
 
 gulp.task('sass', function () {
     gulp.src(paths.sass)
